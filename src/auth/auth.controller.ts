@@ -21,16 +21,16 @@ export class AuthController {
   @Post('/verify-email')
   verifyEmail(
     @Query('email') email: string,
-    @Query('authKey') authKey : string,
+    @Query('authKey') authKey: string,
   ): Promise<void> {
-    return this.authService.verifyEmail({email,authKey});
+    return this.authService.verifyEmail({ email, authKey });
   }
 
-//   // 로그인은 verifed가 true인 User만 가능
-//   @Post('/sign-in')
-//   signIn(
-//     @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto,
-//   ): Promise<{ accessToken: string }> {
-//     return this.authService.signIn(authCredentialsDto);
-//   }
+  // 로그인은 verifed가 true인 User만 가능
+  @Post('/sign-in')
+  signIn(
+    @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto,
+  ): Promise<any> {
+    return this.authService.signIn(authCredentialsDto);
+  }
 }
