@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  Res,
 } from '@nestjs/common';
 import { AuthCredentialsDto } from './dto/auth-credential.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -10,6 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 import { MailService } from './mail.service';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { User } from './user.entity';
+import { Response } from 'express';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -42,11 +44,28 @@ export class AuthService {
 
   async signIn(
     authCredentialsDto: AuthCredentialsDto,
-  ): Promise<{ accessToken: string }> {
+    @Res() res: Response,
+  ): Promise<any> {
     const user = await this.validateUser(authCredentialsDto);
     if (user) {
       const accessToken = await this.generateAccessToken(user);
-      return accessToken;
+      const refreshToken = await this.generateRefreshToken(user);
+
+      // 유저 객체에 refresh token 저장
+      await this.userRepository.setRefreshToken(refreshToken,user.id);
+      res.setHeader('Authorization', 'Bearer ' + accessToken);
+      res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+      });
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+      });
+
+      return res.json({
+        message: "login success",
+        accessToken: accessToken,
+        refreshToken: refreshToken
+      });
     }
   }
 
@@ -77,6 +96,18 @@ export class AuthService {
       nickname: user.nickname,
     };
     return { accessToken: await this.jwtService.signAsync(payload) };
+  }
+
+  async generateRefreshToken(user:User) : Promise<string>{
+    const payload = {
+      id: user.id,
+      email: user.email,
+      nickname : user.nickname,
+    }
+    return this.jwtService.signAsync({id:payload.id},{
+      secret: process.env.REFRESH_KEY,
+      expiresIn: process.env.REFRESH_EXPIRE
+    })
   }
 
   

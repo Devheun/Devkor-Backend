@@ -25,4 +25,11 @@ export class User extends BaseEntity {
 
   @Column({default:false})
   verified: boolean;
+
+  @Column({nullable:true})
+  refreshToken : string;
+
+  @Column({type:'datetime', nullable:true})
+  refreshExp : Date;
+
 }

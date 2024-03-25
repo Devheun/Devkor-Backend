@@ -7,7 +7,7 @@ import { DataSource, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { AuthCredentialsDto } from './dto/auth-credential.dto';
 import * as bcrypt from 'bcrypt';
-import {v1 as uuid} from "uuid";
+import { v1 as uuid } from 'uuid';
 
 @Injectable()
 export class UserRepository extends Repository<User> {
@@ -22,15 +22,39 @@ export class UserRepository extends Repository<User> {
     const authKey = uuid();
     // 처음에 회원 만들때는 인증이 안된 상태
     // authKey는 random value
-    const user = this.create({ email, password: hashedPassword, nickname, authKey, verified : false });
+    const user = this.create({
+      email,
+      password: hashedPassword,
+      nickname,
+      authKey,
+      verified: false,
+    });
     try {
       await this.save(user);
     } catch (error) {
-      if (error.code === 'ER_DUP_ENTRY') { // email 중복되면
+      if (error.code === 'ER_DUP_ENTRY') {
+        // email 중복되면
         throw new ConflictException('Existing email or nickname!');
       } else {
         throw new InternalServerErrorException();
       }
     }
+  }
+
+  async setRefreshToken(refreshToken: string, userId: number): Promise<void> {
+    const currentDate = new Date();
+    const currentRefreshExp = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      currentDate.getDate() + parseInt(process.env.REFRESH_EXPIRE),
+      currentDate.getHours(),
+      currentDate.getMinutes(),
+      // 초 단위는 절삭
+    );
+
+    await this.update(userId, {
+      refreshToken: refreshToken,
+      refreshExp: currentRefreshExp,
+    });
   }
 }
