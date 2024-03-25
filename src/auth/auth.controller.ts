@@ -1,9 +1,18 @@
-import { Body, Controller, Post, Query, Res, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Query,
+  Res,
+  UnauthorizedException,
+  ValidationPipe,
+} from '@nestjs/common';
 import { AuthCredentialsDto } from './dto/auth-credential.dto';
 import { AuthService } from './auth.service';
 import { MailService } from './mail.service';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { Response } from 'express';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -30,9 +39,24 @@ export class AuthController {
   // 로그인은 verifed가 true인 User만 가능
   @Post('/sign-in')
   signIn(
-    @Res() res : Response,
+    @Res() res: Response,
     @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto,
   ): Promise<any> {
-    return this.authService.signIn(authCredentialsDto,res);
+    return this.authService.signIn(authCredentialsDto, res);
+  }
+
+  @Post('/refresh')
+  async refresh(
+    @Body() refreshTokenDto: RefreshTokenDto,
+    @Res() res: Response,
+  ) {
+    try {
+      const newAccessToken = await this.authService.refresh(refreshTokenDto);
+      res.setHeader('Authorization', 'Bearer ' + newAccessToken);
+      res.cookie('accessToken', newAccessToken, { httpOnly: true });
+      res.send({ newAccessToken });
+    } catch (error) {
+      throw new UnauthorizedException('Invalid refresh token!');
+    }
   }
 }

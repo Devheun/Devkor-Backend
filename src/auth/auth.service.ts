@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
   Res,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthCredentialsDto } from './dto/auth-credential.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,6 +14,7 @@ import { VerifyEmailDto } from './dto/verify-email.dto';
 import { User } from './user.entity';
 import { Response } from 'express';
 import * as bcrypt from 'bcrypt';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Injectable()
 export class AuthService {
@@ -52,7 +54,7 @@ export class AuthService {
       const refreshToken = await this.generateRefreshToken(user);
 
       // 유저 객체에 refresh token 저장
-      await this.userRepository.setRefreshToken(refreshToken,user.id);
+      await this.userRepository.setRefreshToken(refreshToken, user.id);
       res.setHeader('Authorization', 'Bearer ' + accessToken);
       res.cookie('accessToken', accessToken, {
         httpOnly: true,
@@ -62,9 +64,9 @@ export class AuthService {
       });
 
       return res.json({
-        message: "login success",
+        message: 'login success',
         accessToken: accessToken,
-        refreshToken: refreshToken
+        refreshToken: refreshToken,
       });
     }
   }
@@ -89,26 +91,55 @@ export class AuthService {
     return user;
   }
 
-  async generateAccessToken(user: User): Promise<{ accessToken: string }> {
+  async generateAccessToken(user: User): Promise<string> {
     const payload = {
       id: user.id,
       email: user.email,
       nickname: user.nickname,
     };
-    return { accessToken: await this.jwtService.signAsync(payload) };
+    return await this.jwtService.signAsync(payload);
   }
 
-  async generateRefreshToken(user:User) : Promise<string>{
+  async generateRefreshToken(user: User): Promise<string> {
     const payload = {
       id: user.id,
       email: user.email,
-      nickname : user.nickname,
-    }
-    return this.jwtService.signAsync({id:payload.id},{
-      secret: process.env.REFRESH_KEY,
-      expiresIn: process.env.REFRESH_EXPIRE
-    })
+      nickname: user.nickname,
+    };
+    return this.jwtService.signAsync(
+      { id: payload.id },
+      {
+        secret: process.env.REFRESH_KEY,
+        expiresIn: process.env.REFRESH_EXPIRE,
+      },
+    );
   }
 
-  
+  async refresh(refreshTokenDto: RefreshTokenDto): Promise<any> {
+    const { refreshToken } = refreshTokenDto;
+
+    const decodedRefreshToken = this.jwtService.verify(refreshToken, {
+      secret: process.env.REFRESH_KEY,
+    });
+
+    const userId = decodedRefreshToken.id;
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid user!');
+    }
+
+    if (!user.refreshToken) {
+      // user에 refreshToken이 존재하지 않으면
+      return null;
+    }
+
+    if (user.refreshToken !== refreshToken) {
+      throw new UnauthorizedException('Invalid refresh token!');
+    }
+    const newAccessToken = await this.generateAccessToken(user);
+    return newAccessToken;
+  }
 }
