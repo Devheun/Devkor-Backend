@@ -72,6 +72,7 @@ export class AuthService {
   }
 
   async validateUser(authCredentialsDto: AuthCredentialsDto): Promise<User> {
+
     const user = await this.userRepository.findOne({
       where: { email: authCredentialsDto.email },
     });
@@ -146,10 +147,17 @@ export class AuthService {
   }
 
   async unregister(authCredentialsDto: AuthCredentialsDto): Promise<void> {
-    const user = await this.validateUser(authCredentialsDto);
-    if (user) {
-      await this.userRepository.delete(user.id);
-    } else{
+    try {
+      const user = await this.validateUser(authCredentialsDto);
+      if (user) {
+        const result = await this.userRepository.delete(user.id);
+        if (result.affected === 0) {
+          throw new NotFoundException('User not found');
+        }
+      } else {
+        throw new UnauthorizedException('Invalid user!');
+      }
+    } catch (error) {
       throw new UnauthorizedException('Invalid user!');
     }
   }

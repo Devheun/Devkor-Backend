@@ -63,7 +63,7 @@ export class AuthController {
     }
   }
 
-  @Delete('unregister')
+  @Delete('/unregister')
   async unregister(
     @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto,
   ): Promise<void> {
