@@ -43,14 +43,7 @@ export class UserRepository extends Repository<User> {
 
   async setRefreshToken(refreshToken: string, userId: number): Promise<void> {
     const currentDate = new Date();
-    const currentRefreshExp = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth(),
-      currentDate.getDate() + parseInt(process.env.REFRESH_EXPIRE),
-      currentDate.getHours(),
-      currentDate.getMinutes(),
-      // 초 단위는 절삭
-    );
+    const currentRefreshExp = new Date(currentDate.setDate(currentDate.getDate() + parseInt(process.env.REFRESH_EXPIRE)));
 
     await this.update(userId, {
       refreshToken: refreshToken,

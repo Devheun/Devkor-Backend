@@ -22,7 +22,7 @@ export class MailService {
         from: process.env.EMAIL_ADDRESS,
         subject: '회원가입 메일',
         html: `<p>회원가입을 위해서는 해당 링크를 클릭하세요!</p>
-        <form action="http://localhost:3000/auth/verify-email?email=${email}&authKey=${authKey}" method="POST">
+        <form action="${process.env.BASE_URL}/auth/verify-email?email=${email}&authKey=${authKey}" method="POST">
         <button type="submit">인증링크</button>
       </form>`,
       })

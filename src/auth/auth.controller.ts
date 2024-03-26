@@ -1,8 +1,11 @@
 import {
   Body,
   Controller,
+  Delete,
+  Param,
   Post,
   Query,
+  Req,
   Res,
   UnauthorizedException,
   ValidationPipe,
@@ -11,7 +14,7 @@ import { AuthCredentialsDto } from './dto/auth-credential.dto';
 import { AuthService } from './auth.service';
 import { MailService } from './mail.service';
 import { VerifyEmailDto } from './dto/verify-email.dto';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Controller('auth')
@@ -58,5 +61,12 @@ export class AuthController {
     } catch (error) {
       throw new UnauthorizedException('Invalid refresh token!');
     }
+  }
+
+  @Delete('unregister')
+  async unregister(
+    @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto,
+  ): Promise<void> {
+    return this.authService.unregister(authCredentialsDto);
   }
 }

@@ -117,29 +117,41 @@ export class AuthService {
 
   async refresh(refreshTokenDto: RefreshTokenDto): Promise<any> {
     const { refreshToken } = refreshTokenDto;
+    try {
+      const decodedRefreshToken = this.jwtService.verify(refreshToken, {
+        secret: process.env.REFRESH_KEY,
+      });
+      const userId = decodedRefreshToken.id;
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+      });
 
-    const decodedRefreshToken = this.jwtService.verify(refreshToken, {
-      secret: process.env.REFRESH_KEY,
-    });
+      if (!user) {
+        throw new UnauthorizedException('Invalid user!');
+      }
 
-    const userId = decodedRefreshToken.id;
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-    });
+      if (!user.refreshToken) {
+        // user에 refreshToken이 존재하지 않으면
+        return null;
+      }
 
-    if (!user) {
-      throw new UnauthorizedException('Invalid user!');
-    }
-
-    if (!user.refreshToken) {
-      // user에 refreshToken이 존재하지 않으면
-      return null;
-    }
-
-    if (user.refreshToken !== refreshToken) {
+      if (user.refreshToken !== refreshToken) {
+        throw new UnauthorizedException('Invalid refresh token!');
+      }
+      const newAccessToken = await this.generateAccessToken(user);
+      return newAccessToken;
+    } catch (error) {
       throw new UnauthorizedException('Invalid refresh token!');
     }
-    const newAccessToken = await this.generateAccessToken(user);
-    return newAccessToken;
   }
+
+  async unregister(authCredentialsDto: AuthCredentialsDto): Promise<void> {
+    const user = await this.validateUser(authCredentialsDto);
+    if (user) {
+      await this.userRepository.delete(user.id);
+    } else{
+      throw new UnauthorizedException('Invalid user!');
+    }
+  }
+
 }
