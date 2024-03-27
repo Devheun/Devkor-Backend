@@ -16,7 +16,7 @@ import { ConfigService } from '@nestjs/config';
       global: true,
       useFactory: (config: ConfigService) => ({
         secret: process.env.ACCESS_KEY,
-        signOptions: { expiresIn: '5m' },
+        signOptions: { expiresIn: '15m' },
       })
     }),
   ],

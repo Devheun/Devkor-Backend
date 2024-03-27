@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { ConfigModule } from '@nestjs/config';
 import { User } from './auth/user.entity';
+import { BoardModule } from './board/board.module';
+import { Board } from './board/board.entity';
 
 @Module({
   imports: [
@@ -17,7 +19,7 @@ import { User } from './auth/user.entity';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      entities: [User],
+      entities: [User,Board],
       synchronize: true,
     }),
     MailerModule.forRootAsync({
@@ -36,6 +38,7 @@ import { User } from './auth/user.entity';
       }),
     }),
     AuthModule,
+    BoardModule,
   ],
 })
 export class AppModule {}
