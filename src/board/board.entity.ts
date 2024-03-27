@@ -1,4 +1,5 @@
-import { Column, Entity,PrimaryGeneratedColumn } from "typeorm";
+import { User } from "src/auth/user.entity";
+import { Column, Entity,ManyToOne,OneToMany,PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class Board {
@@ -22,4 +23,9 @@ export class Board {
 
     @Column({default : 0})
     likeCount : number;
+
+    @ManyToOne(()=>User, user=>user.board,{
+        onDelete:'CASCADE'
+    })
+    user : User;
 }

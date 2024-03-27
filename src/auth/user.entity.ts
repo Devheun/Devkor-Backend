@@ -1,7 +1,10 @@
+import { Board } from 'src/board/board.entity';
 import {
   BaseEntity,
   Column,
   Entity,
+  ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
@@ -31,5 +34,8 @@ export class User extends BaseEntity {
 
   @Column({type:'datetime', nullable:true})
   refreshExp : Date;
+
+  @OneToMany(()=>Board, board=>board.user)
+  board: Board[];
 
 }

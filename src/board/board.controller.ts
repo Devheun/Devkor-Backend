@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { BoardService } from './board.service';
@@ -16,6 +25,14 @@ export class BoardController {
     @Body() createBoardDto: CreateBoardDto,
     @GetUser() user: User,
   ): Promise<Board> {
-    return this.boardService.createBoard(createBoardDto,user);
+    return this.boardService.createBoard(createBoardDto, user);
+  }
+
+  @Delete('/:boardId')
+  deleteBoard(
+    @GetUser() user: User,
+    @Param('boardId',ParseIntPipe) boardId: number,
+  ): Promise<void> {
+    return this.boardService.deleteBoard(boardId, user);
   }
 }
