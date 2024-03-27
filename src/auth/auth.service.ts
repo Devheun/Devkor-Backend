@@ -72,7 +72,6 @@ export class AuthService {
   }
 
   async validateUser(authCredentialsDto: AuthCredentialsDto): Promise<User> {
-
     const user = await this.userRepository.findOne({
       where: { email: authCredentialsDto.email },
     });
@@ -162,4 +161,33 @@ export class AuthService {
     }
   }
 
+  async resetPassword(
+    email: string,
+    nickname : string,
+  ): Promise<void> {
+    try {
+      const checkEmail = await this.userRepository.findOne({where:{email}});
+      if(checkEmail.nickname !== nickname){ // 초기화하고자 하는 이메일과 닉네임이 일치하지 않으면
+        throw new UnauthorizedException('Email and nickname do not match!');
+      }
+      await this.mailService.sendResetPasswordEmail(email);
+
+    } catch (error) {
+      throw new UnauthorizedException('Invalid user!');
+    }
+  }
+
+  async reset(email : string) : Promise<void>{
+    const user = await this.userRepository.findOne({where:{email}});
+    if(user){
+      user.password = await bcrypt.hash(process.env.RESET_PASSWORD,10);
+      await this.userRepository.save(user);
+      const result = await bcrypt.compare(process.env.RESET_PASSWORD,user.password);
+      if(result){
+        console.log(`초기 비밀번호는 ${process.env.RESET_PASSWORD}입니다.`);
+      }
+    } else{
+      throw new UnauthorizedException('Invalid email!');
+    }
+  }
 }

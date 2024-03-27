@@ -33,4 +33,22 @@ export class MailService {
         new ConflictException(error);
       });
   }
+
+  async sendResetPasswordEmail(email: string): Promise<void> {
+    this.mailerService.sendMail({
+      to: `${email}`,
+      from: process.env.EMAIL_ADDRESS,
+      subject: '비밀번호 초기화',
+      html: `<p>비밀번호 초기화를 위해서는 초기화 버튼을 클릭하세요!</p>
+      <form action="${process.env.BASE_URL}/auth/reset?email=${email}" method="POST">
+      <button type="submit">초기화</button>
+      </form>`,
+    })
+    .then((result) => {
+      console.log(result);
+    })
+    .catch((error) => {
+      new ConflictException(error);
+    });;
+  }
 }

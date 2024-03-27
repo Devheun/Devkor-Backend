@@ -39,6 +39,11 @@ export class AuthController {
     return this.authService.verifyEmail({ email, authKey });
   }
 
+  @Post('/reset') // 실제 비밀번호 초기화 controller
+  resetPassword(@Query('email') email: string): Promise<void> {
+    return this.authService.reset(email);
+  }
+
   // 로그인은 verifed가 true인 User만 가능
   @Post('/sign-in')
   signIn(
@@ -52,7 +57,7 @@ export class AuthController {
   async refresh(
     @Body() refreshTokenDto: RefreshTokenDto,
     @Res() res: Response,
-  ) {
+  ): Promise<void> {
     try {
       const newAccessToken = await this.authService.refresh(refreshTokenDto);
       res.setHeader('Authorization', 'Bearer ' + newAccessToken);
@@ -68,5 +73,17 @@ export class AuthController {
     @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto,
   ): Promise<void> {
     return this.authService.unregister(authCredentialsDto);
+  }
+
+  @Post('/reset-password') // 비밀번호 초기화 이메일 보내는 Controller
+  async passwordReset(
+    @Query('email') email: string,
+    @Query('nickname') nickname: string,
+  ): Promise<void> {
+    try {
+      const reset = await this.authService.resetPassword(email, nickname);
+    } catch (error) {
+      throw new UnauthorizedException('Invalid email or nickname');
+    }
   }
 }
