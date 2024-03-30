@@ -14,4 +14,8 @@ export class CommentsService {
     async createComment(boardId: number, user: User, comment: string): Promise<Comments> {
         return this.commentsRepository.createComment(boardId, user, comment);
     }
+
+    async deleteComment(commentId: number, user: User): Promise<void> {
+        return this.commentsRepository.deleteComment(commentId, user);
+    }
 }

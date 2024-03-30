@@ -4,6 +4,7 @@ import {
   NotFoundException,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Res,
   UseGuards,
@@ -39,6 +40,23 @@ export class CommentsController {
     }catch(error){
         console.error(error);
         throw new NotFoundException('Board not found!')
+    }
+  }
+
+  @Patch('cancel/:commentId')
+  async cancelComment(
+    @Param('commentId', ParseIntPipe) commentId: number,
+    @GetUser() user: User,
+    @Res() res: Response
+  ): Promise<any> {
+    try{
+        await this.commentsService.deleteComment(commentId, user);
+        return res.status(200).json({
+            message: 'Comment deleted!',
+        })
+    }catch(error){
+        console.error(error);
+        throw new NotFoundException('Comment not found!')
     }
   }
 }
