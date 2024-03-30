@@ -10,5 +10,6 @@ import { BoardRepository } from './board.repository';
   imports: [TypeOrmModule.forFeature([Board]), AuthModule],
   controllers: [BoardController],
   providers: [BoardService,BoardRepository],
+  exports:[BoardModule]
 })
 export class BoardModule {}

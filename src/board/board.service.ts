@@ -21,4 +21,11 @@ export class BoardService {
            throw new NotFoundException(`Can't find Board with id ${boardId} with your account!`);
        }
     }
+    async addLikeCount(boardId:number, user:User) : Promise<Board>{ // boardId에 해당하는 게시글의 좋아요 수를 1 증가
+        return await this.boardRepository.addLikeCount(boardId,user);
+    }
+
+    async subLikeCount(boardId:number, user: User) : Promise<Board>{ // boardId에 해당하는 게시글의 좋아요 수를 1 감소
+        return await this.boardRepository.subLikeCount(boardId,user);
+    }
 }

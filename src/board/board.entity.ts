@@ -1,4 +1,5 @@
 import { User } from "src/auth/user.entity";
+import { ThumbsUp } from "src/thumbsUp/thumbsUp.entity";
 import { Column, Entity,ManyToOne,OneToMany,PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
@@ -28,4 +29,7 @@ export class Board {
         onDelete:'CASCADE'
     })
     user : User;
+
+    @OneToMany(()=>ThumbsUp, thumbsUp => thumbsUp.board)
+    thumbsUp: ThumbsUp[];
 }

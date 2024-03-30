@@ -6,6 +6,8 @@ import { ConfigModule } from '@nestjs/config';
 import { User } from './auth/user.entity';
 import { BoardModule } from './board/board.module';
 import { Board } from './board/board.entity';
+import { LikeModule } from './thumbsUp/thumbsUp.module';
+import { ThumbsUp } from './thumbsUp/thumbsUp.entity';
 
 @Module({
   imports: [
@@ -19,7 +21,7 @@ import { Board } from './board/board.entity';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      entities: [User,Board],
+      entities: [User,Board,ThumbsUp],
       synchronize: true,
     }),
     MailerModule.forRootAsync({
@@ -39,6 +41,7 @@ import { Board } from './board/board.entity';
     }),
     AuthModule,
     BoardModule,
+    LikeModule,
   ],
 })
 export class AppModule {}
