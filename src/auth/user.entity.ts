@@ -1,4 +1,5 @@
 import { Board } from 'src/board/board.entity';
+import { Comments } from 'src/comments/comments.entity';
 import { ThumbsUp } from 'src/thumbsUp/thumbsUp.entity';
 import {
   BaseEntity,
@@ -41,4 +42,7 @@ export class User extends BaseEntity {
 
   @OneToMany(()=>ThumbsUp, thumbsUp=>thumbsUp.user)
   thumbsUp: ThumbsUp[];
+
+  @OneToMany(()=>Comments, comments=>comments.user)
+  comments: Comments[];
 }

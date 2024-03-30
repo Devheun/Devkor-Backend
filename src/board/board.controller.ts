@@ -21,7 +21,7 @@ export class BoardController {
   constructor(private boardService: BoardService) {}
 
   @Post()
-  createBoard(
+  async createBoard(
     @Body() createBoardDto: CreateBoardDto,
     @GetUser() user: User,
   ): Promise<Board> {
@@ -29,7 +29,7 @@ export class BoardController {
   }
 
   @Delete('/:boardId')
-  deleteBoard(
+  async deleteBoard(
     @GetUser() user: User,
     @Param('boardId',ParseIntPipe) boardId: number,
   ): Promise<void> {

@@ -1,4 +1,5 @@
 import { User } from "src/auth/user.entity";
+import { Comments } from "src/comments/comments.entity";
 import { ThumbsUp } from "src/thumbsUp/thumbsUp.entity";
 import { Column, Entity,ManyToOne,OneToMany,PrimaryGeneratedColumn } from "typeorm";
 
@@ -32,4 +33,7 @@ export class Board {
 
     @OneToMany(()=>ThumbsUp, thumbsUp => thumbsUp.board)
     thumbsUp: ThumbsUp[];
+
+    @OneToMany(()=>Comments, comments=>comments.board)
+    comments: Comments[];
 }

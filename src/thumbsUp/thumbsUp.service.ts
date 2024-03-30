@@ -18,6 +18,7 @@ export class ThumbsUpService {
   async clickLike(boardId: number, user: User): Promise<void> {
     await this.thumbsUpRepository.clickThumbsUp(boardId, user);
     await this.boardRepository.addLikeCount(boardId, user);
+    
   }
 
   async cancelLike(boardId: number, user: User): Promise<void> {
