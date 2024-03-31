@@ -10,6 +10,8 @@ import { LikeModule } from './thumbsUp/thumbsUp.module';
 import { ThumbsUp } from './thumbsUp/thumbsUp.entity';
 import { CommentsModule } from './comments/comments.module';
 import { Comments } from './comments/comments.entity';
+import { ReplyModule } from './reply/reply.module';
+import { Reply } from './reply/reply.entity';
 
 @Module({
   imports: [
@@ -23,7 +25,7 @@ import { Comments } from './comments/comments.entity';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      entities: [User,Board,ThumbsUp,Comments],
+      entities: [User,Board,ThumbsUp,Comments,Reply],
       synchronize: true,
     }),
     MailerModule.forRootAsync({
@@ -45,6 +47,7 @@ import { Comments } from './comments/comments.entity';
     BoardModule,
     LikeModule,
     CommentsModule,
+    ReplyModule,
   ],
 })
 export class AppModule {}

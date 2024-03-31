@@ -1,6 +1,7 @@
 import { User } from "src/auth/user.entity";
 import { Board } from "src/board/board.entity";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Reply } from "src/reply/reply.entity";
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 
 @Entity()
@@ -35,4 +36,7 @@ export class Comments {
         onDelete:'CASCADE',
     })
     board: Board;
+
+    @OneToMany(()=>Reply, reply=>reply.comments)
+    reply: Reply;
 }
