@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { Reply } from './reply.entity';
 import { User } from 'src/auth/user.entity';
@@ -27,6 +27,22 @@ export class ReplyRepository extends Repository<Reply> {
         console.log(user);
       console.error(error);
       throw new NotFoundException('Comment not found!');
+    }
+  }
+
+  async deleteReply(replyId: number, user: User): Promise<Reply> {
+    try{
+      const reply = await this.findOne({
+        where: {id : replyId},
+      });
+      if(reply.userId !== user.id){
+        throw new UnauthorizedException('Unauthorized action!');
+      }
+      await this.delete(reply);
+      return reply;
+    }catch(error){
+      console.error(error);
+      throw new NotFoundException('Reply not found!');
     }
   }
 }

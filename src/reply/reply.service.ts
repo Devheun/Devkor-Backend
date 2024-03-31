@@ -20,4 +20,8 @@ export class ReplyService {
         const nickname = userInfo.user.nickname;
         return {replys, nickname};
     }
+
+    async deleteReply(replyId:number, user:User): Promise<Reply>{
+        return this.replyRepository.deleteReply(replyId, user);
+    }
 }

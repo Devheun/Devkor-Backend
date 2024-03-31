@@ -1,4 +1,4 @@
-import { Body, Controller, NotFoundException, Param, ParseIntPipe, Post, Res, UseGuards, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, NotFoundException, Param, ParseIntPipe, Post, Res, UseGuards, ValidationPipe } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
 import { GetUser } from 'src/auth/get-user.decorator';
@@ -27,6 +27,23 @@ export class ReplyController {
         }catch(error){
             console.error(error);
             throw new NotFoundException('Comment not found!');
+        }
+    }
+
+    @Delete('cancel/:replyId')
+    async cancelReply(
+        @Param('replyId',ParseIntPipe) replyId: number,
+        @GetUser() user : User,
+        @Res() res: Response,
+    ): Promise<any> {
+        try{
+            await this.replyService.deleteReply(replyId, user);
+            return res.status(200).json({
+                message: 'Reply deleted!',
+            })
+        }catch(error){
+            console.error(error);
+            throw new NotFoundException('Reply not found!');
         }
     }
 }
