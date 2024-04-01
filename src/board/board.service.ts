@@ -7,6 +7,7 @@ import { User } from 'src/auth/user.entity';
 import { PageOptionsDto } from './dto/page-options.dto';
 import { PageDto } from './dto/page.dto';
 import { PageMetaDto } from './dto/page-meta.dto';
+import { BoardListDto } from './dto/board-list.dto';
 
 @Injectable()
 export class BoardService {
@@ -83,7 +84,7 @@ export class BoardService {
     };
   }
 
-  async paginate(pageOptionsDto: PageOptionsDto): Promise<PageDto<Board>> {
+  async paginate(pageOptionsDto: PageOptionsDto,search:string,order:string = 'likeCount'): Promise<BoardListDto[]> {
     const [boards, total] = await this.boardRepository.findAndCount({
       take: pageOptionsDto.take, //limit : 한 페이지에 가져올 데이터의 제한 갯수 (ex. take=1 이면 한 페이지에 하나의 데이터)
       skip: pageOptionsDto.skip, //offset : 이전의 요청 데이터 개수, 현재 요청이 시작되는 위치 (ex. take=1, 요청 page=1 이면 0부터 시작 )
@@ -116,18 +117,33 @@ export class BoardService {
         userNicknamesWithId.map((board)=>[board.id,board.user.nickname])
     );
 
-    const boardListDto = boardsWithCommentsCountAdded.map((board)=>({
-        ...board,
-        userNickname: userNicknamesMap.get(board.id) || 0,
-    }));
+    let boardListDto = boardsWithCommentsCountAdded.map((board)=>({
+      title : board.title,
+      content: board.content,
+      likeCount: board.likeCount,
+      viewCount : board.viewCount,
+      commentsCount: board.commentsCount,
+      nickname : userNicknamesMap.get(board.id),
+      createdAt: board.createdAt,
+  }));
 
-    console.log(boardListDto);
     const pageMetaDto = new PageMetaDto({ pageOptionsDto, total });
     const lastPage = pageMetaDto.lastPage;
     if (lastPage >= pageMetaDto.page) {
-      return new PageDto(boardListDto, pageMetaDto);
-    } else {
-      throw new NotFoundException(`Page not found!`);
+      if (search){
+        boardListDto = boardListDto.filter(board => board.content.includes(search) || board.title.includes(search));
+      }
+      if (order === 'likeCount'){
+        boardListDto.sort((a,b)=>b.likeCount - a.likeCount);
+      } else if (order === 'createdAt'){
+        boardListDto.sort((a,b)=>b.createdAt.getTime() - a.createdAt.getTime());
+    } else if (order === 'viewCount'){
+        boardListDto.sort((a,b)=>b.viewCount - a.viewCount);
     }
+      return boardListDto;
+  }
+  else {
+    throw new NotFoundException(`Page not found!`);
+  }
   }
 }
