@@ -4,6 +4,9 @@ import { BoardRepository } from './board.repository';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { Board } from './board.entity';
 import { User } from 'src/auth/user.entity';
+import { PageOptionsDto } from './dto/page-options.dto';
+import { PageDto } from './dto/page.dto';
+import { PageMetaDto } from './dto/page-meta.dto';
 
 @Injectable()
 export class BoardService {
@@ -51,13 +54,14 @@ export class BoardService {
         'comments.reply.user',
       ],
     });
-    
+
     const writerNickname = boardInfo.user.nickname;
     const createdAt = boardInfo.createdAt;
     const viewCount = boardInfo.viewCount;
     const title = boardInfo.title;
     const likeCount = boardInfo.likeCount;
-    const thumbsUpUserNicknames = await this.boardRepository.getThumbsUpUserNicknames(boardId);
+    const thumbsUpUserNicknames =
+      await this.boardRepository.getThumbsUpUserNicknames(boardId);
     const commentsList = boardInfo.comments;
     const commentsAndReplies = commentsList.map((comment) => ({
       commentContent: comment.content,
@@ -68,6 +72,62 @@ export class BoardService {
       })),
     }));
 
-    return {writerNickname,createdAt,viewCount,title,likeCount,thumbsUpUserNicknames,commentsAndReplies};
+    return {
+      writerNickname,
+      createdAt,
+      viewCount,
+      title,
+      likeCount,
+      thumbsUpUserNicknames,
+      commentsAndReplies,
+    };
+  }
+
+  async paginate(pageOptionsDto: PageOptionsDto): Promise<PageDto<Board>> {
+    const [boards, total] = await this.boardRepository.findAndCount({
+      take: pageOptionsDto.take, //limit : 한 페이지에 가져올 데이터의 제한 갯수 (ex. take=1 이면 한 페이지에 하나의 데이터)
+      skip: pageOptionsDto.skip, //offset : 이전의 요청 데이터 개수, 현재 요청이 시작되는 위치 (ex. take=1, 요청 page=1 이면 0부터 시작 )
+    });
+    const boardsWithCommentsCount = await this.boardRepository
+      .createQueryBuilder('board')
+      .leftJoinAndSelect('board.comments', 'comments')
+      .select(['board.id', 'COUNT(comments.id) AS commentsCount'])
+      .groupBy('board.id')
+      .getRawMany();
+    const boardsWithCommentsCountMap = new Map(
+      boardsWithCommentsCount.map((board) => [
+        board.board_id,
+        board.commentsCount,
+      ]),
+    );
+
+    const boardsWithCommentsCountAdded = boards.map((board) => ({
+      ...board,
+      commentsCount: parseInt(boardsWithCommentsCountMap.get(board.id)) || 0,
+    }));
+
+
+    const userNicknamesWithId = await this.boardRepository.createQueryBuilder('board')
+    .leftJoin('board.user','user')
+    .select(['board.id','user.nickname'])
+    .getMany();
+
+    const userNicknamesMap = new Map(
+        userNicknamesWithId.map((board)=>[board.id,board.user.nickname])
+    );
+
+    const boardListDto = boardsWithCommentsCountAdded.map((board)=>({
+        ...board,
+        userNickname: userNicknamesMap.get(board.id) || 0,
+    }));
+
+    console.log(boardListDto);
+    const pageMetaDto = new PageMetaDto({ pageOptionsDto, total });
+    const lastPage = pageMetaDto.lastPage;
+    if (lastPage >= pageMetaDto.page) {
+      return new PageDto(boardListDto, pageMetaDto);
+    } else {
+      throw new NotFoundException(`Page not found!`);
+    }
   }
 }
