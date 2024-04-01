@@ -65,4 +65,27 @@ export class BoardRepository extends Repository<Board> {
       throw new NotFoundException('Board not found!');
     }
   }
+  async addViewCount(boardId: number): Promise<Board> {
+    try {
+      const board = await this.findOne({
+        where: { id: boardId },
+      });
+
+      board.viewCount += 1;
+      await this.save(board);
+      return board;
+    } catch (error) {
+      throw new NotFoundException('Board not found!');
+    }
+  }
+
+  async getThumbsUpUserNicknames(boardId: number): Promise<string[]> {
+    const board = await this.createQueryBuilder('board')
+      .leftJoinAndSelect('board.thumbsUp', 'thumbsUp')
+      .leftJoinAndSelect('thumbsUp.user', 'user')
+      .where('board.id = :boardId', { boardId })
+      .getOne();
+      return board.thumbsUp.map((thumbsUp) => thumbsUp.user ? thumbsUp.user.nickname : 'Unknown');
+  }
+
 }

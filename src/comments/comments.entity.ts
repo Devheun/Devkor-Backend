@@ -38,5 +38,5 @@ export class Comments {
     board: Board;
 
     @OneToMany(()=>Reply, reply=>reply.comments)
-    reply: Reply;
+    reply: Reply[];
 }

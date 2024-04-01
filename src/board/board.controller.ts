@@ -35,4 +35,12 @@ export class BoardController {
   ): Promise<void> {
     return this.boardService.deleteBoard(boardId, user);
   }
+
+  @Get('/:boardId')
+  async getBoardInfo(
+    @Param('boardId', ParseIntPipe) boardId: number,
+    @GetUser() user: User,
+  ) : Promise<any>{
+    return this.boardService.getBoardInfo(boardId,user);
+  }
 }

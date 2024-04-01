@@ -88,6 +88,10 @@ export class AuthService {
       throw new BadRequestException('User is not verified');
     }
 
+    if (user.nickname != authCredentialsDto.nickname) {
+      throw new BadRequestException('Invalid nickname!');
+    }
+
     return user;
   }
 
