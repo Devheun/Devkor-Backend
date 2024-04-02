@@ -64,9 +64,9 @@ export class BoardService {
     const thumbsUpUserNicknames =
       await this.boardRepository.getThumbsUpUserNicknames(boardId);
     const commentsList = boardInfo.comments;
-    const commentsAndReplies = commentsList.map((comment) => ({
-      commentContent: comment.content,
-      commentUserNickname: comment.user.nickname,
+    const commentsAndReplies = commentsList.map(comment => ({
+      commentContent : comment.isDeleted? '삭제된 댓글입니다.' : comment.content,
+      commentUserNickname : comment.isDeleted? '삭제된 댓글입니다' : comment.user.nickname,
       replies: comment.reply.map((reply) => ({
         replyContent: reply.content,
         replyUserNickname: reply.user.nickname,
