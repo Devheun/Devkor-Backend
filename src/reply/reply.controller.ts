@@ -15,15 +15,14 @@ export class ReplyController {
         @Param('commentsId',ParseIntPipe) commentsId: number,
         @GetUser() user : User,
         @Body(ValidationPipe) reply : string,
-        @Res() res: Response
-    ) : Promise<any>{
+    ) : Promise<Object>{
         try{
             const response = await this.replyService.createReply(commentsId, user, reply['content']);
-            return res.status(201).json({
+            return {
                 content:response['replys'].content,
                 createdAt:response['replys'].createdAt,
                 nickname:response['nickname'],
-            })
+            };
         }catch(error){
             console.error(error);
             throw new NotFoundException('Comment not found!');
@@ -34,13 +33,12 @@ export class ReplyController {
     async cancelReply(
         @Param('replyId',ParseIntPipe) replyId: number,
         @GetUser() user : User,
-        @Res() res: Response,
     ): Promise<any> {
         try{
             await this.replyService.deleteReply(replyId, user);
-            return res.status(200).json({
+            return{
                 message: 'Reply deleted!',
-            })
+            };
         }catch(error){
             console.error(error);
             throw new NotFoundException('Reply not found!');

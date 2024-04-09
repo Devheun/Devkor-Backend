@@ -11,7 +11,7 @@ export class ReplyService {
         private replyRepository: ReplyRepository,
     ){}
 
-    async createReply(commentId: number, user:User, reply:string) : Promise<any>{
+    async createReply(commentId: number, user:User, reply:string) : Promise<Object>{
         const replys = await this.replyRepository.createReply(commentId, user, reply);
         const userInfo = await this.replyRepository.findOne({
             where: {userId : user.id},

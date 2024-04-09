@@ -11,7 +11,7 @@ export class CommentsService {
         private commentsRepository: CommentsRepository,
     ) {}
     
-    async createComment(boardId: number, user: User, comment: string): Promise<any> {
+    async createComment(boardId: number, user: User, comment: string): Promise<Object> {
     
         const comments = await this.commentsRepository.createComment(boardId, user, comment);
         const userInfo = await this.commentsRepository.findOne({

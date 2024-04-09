@@ -27,16 +27,15 @@ export class CommentsController {
     @Param('boardId', ParseIntPipe) boardId: number,
     @GetUser() user: User,
     @Body(ValidationPipe) comment: string,
-    @Res() res: Response
-  ): Promise<any> {
+    ): Promise<Object> {
     try{
         const response = await this.commentsService.createComment(boardId, user,comment['content']);
-        console.log(response);
-        return res.status(201).json({
+        
+        return {
             content:response['comments'].content,
             createdAt:response['comments'].createdAt,
             nickname:response['nickname'],
-        })
+        };
     }catch(error){
         console.error(error);
         throw new NotFoundException('Board not found!')
@@ -47,13 +46,12 @@ export class CommentsController {
   async cancelComment(
     @Param('commentId', ParseIntPipe) commentId: number,
     @GetUser() user: User,
-    @Res() res: Response
   ): Promise<any> {
     try{
         await this.commentsService.deleteComment(commentId, user);
-        return res.status(200).json({
+        return{
             message: 'Comment deleted!',
-        })
+        };
     }catch(error){
         console.error(error);
         throw new NotFoundException('Comment not found!')
